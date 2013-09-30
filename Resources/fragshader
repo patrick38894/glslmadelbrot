@@ -1,0 +1,53 @@
+uniform vec2 screen;
+uniform vec2 zoom;
+uniform vec2 center;
+
+
+vec2 offset(vec2 p) {
+    p.x -= screen.x/2.0;
+    p.y -= screen.y/2.0;
+    return p;
+}
+
+vec2 scale(vec2 p) {
+    p.x /= screen.x/4.;
+    p.y /= screen.x/4.;
+    p.x *= zoom.x;
+    p.y *= zoom.y;
+    p += center;
+    return p;
+}
+
+
+vec2 complexmult(vec2 a, vec2 b) {
+    return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x);
+}
+
+float mandelbrot(vec2 c, int i, float step) {
+    float sum = 0.0;
+    vec2 z = c;
+    for (int n = 0; n < i; ++n) {
+        z = complexmult(z,z) + c;
+        if (z.x * z.x + z.y * z.y >= 4.0)
+            break;
+        sum += step;
+    }
+    return sum;
+}
+
+void main (void)
+{
+    vec2 position = offset(gl_FragCoord.xy);
+    vec2 complex = scale(position);
+    float colormap = mandelbrot(complex, 100, .01);
+    
+    if (colormap >= 99.99 * 0.01)
+        gl_FragColor = vec4(0.,0.,0.,1.);
+    else {
+        gl_FragColor.r = 3. * mod (colormap, 0.3);
+        gl_FragColor.g = 20. * mod (colormap, 0.05);
+        gl_FragColor.b = 1.42857  * mod (colormap, 0.7);
+        gl_FragColor.a = 1.0;
+    }
+}
+
