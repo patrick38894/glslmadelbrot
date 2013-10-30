@@ -1,6 +1,8 @@
 uniform vec2 screen;
 uniform vec2 zoom;
 uniform vec2 center;
+uniform vec2 fractal;
+uniform vec2 time;
 
 
 vec2 offset(vec2 p) {
@@ -27,7 +29,7 @@ float mandelbrot(vec2 c, int i, float step) {
     float sum = 0.0;
     vec2 z = c;
     for (int n = 0; n < i; ++n) {
-        z = complexmult(z,z) + c;
+        z = complexmult(z,z) + fractal;
         if (z.x * z.x + z.y * z.y >= 4.0)
             break;
         sum += step;
@@ -39,13 +41,13 @@ void main (void)
 {
     vec2 position = offset(gl_FragCoord.xy);
     vec2 complex = scale(position);
-    float colormap = mandelbrot(complex, 100, .01);
+    float colormap = mandelbrot(complex, 5000, .01);
     
     if (colormap >= 99.99 * 0.01)
         gl_FragColor = vec4(0.,0.,0.,1.);
     else {
-        gl_FragColor.r = 3. * mod (colormap, 0.3);
-        gl_FragColor.g = 20. * mod (colormap, 0.05);
+        gl_FragColor.r = 3. * mod (colormap, 0.3) * time.x;
+        gl_FragColor.g = 20. * mod (colormap, 0.05) * time.y;
         gl_FragColor.b = 1.42857  * mod (colormap, 0.7);
         gl_FragColor.a = 1.0;
     }

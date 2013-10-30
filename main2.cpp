@@ -48,21 +48,29 @@ int main(int, char const**)
     sf::Vector2i startpos(0,0);
     sf::Vector2f startcenter(0,0);
     sf::Vector2f fractal(0,1);
+    sf::Vector2f speed(1,1);
+    sf::Vector2f old(0,0);
+    sf::Vector2i oldmouse(0,0);
     
     double t = 0.0;
-    double step = .01;
+    double step = .004;
     double pi = 3.14159265;
+	bool toggle = true;
+	bool timefreeze = false;
     
     // Start the game loop
     while (window.isOpen())
     {
-	t += step;
+	if (!timefreeze)
+		t += step;
 	if (t >= 2 * pi)
 		t -= 2 * pi;
 
 	myshader.setParameter("fractal",fractal);
-	fractal.x - sin(t);
-	fractal.y =  cos(t);
+	sf::Vector2f time(sin(t),cos(t));
+	myshader.setParameter("time",time);
+	//fractal.x - sin(t);
+	//fractal.y =  cos(t);
         // Process events
         sf::Event event;
         while (window.pollEvent(event))
@@ -93,15 +101,18 @@ int main(int, char const**)
                 center += sf::Vector2f(zoom.x, 0);
                 myshader.setParameter("center",center);
             }
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Space)
+		toggle = ! toggle;
             
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Down) {
-                center -= sf::Vector2f(0, zoom.y);
-                myshader.setParameter("center",center);
+		old = sf::Vector2f(0.,0.);
+		speed = sf::Vector2f(1.,1.);
             }
             
             if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::Up) {
-                center += sf::Vector2f(0, zoom.y);
-                myshader.setParameter("center",center);
+                old = fractal;
+		speed = sf::Vector2f(speed.x * .5, speed.y * .5);
+		oldmouse = sf::Mouse::getPosition();
             }
             
             
@@ -120,6 +131,19 @@ int main(int, char const**)
                 startpos = sf::Vector2i(0,0);
                 startcenter = center;
             }
+
+		if (toggle) {
+                    fractal.x = double((sf::Mouse::getPosition().x)- screensize.x/2) / double(screensize.x);
+                    fractal.y = double((sf::Mouse::getPosition().y)- screensize.y/2) / double(screensize.y);
+		}
+
+	 
+            if (event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::RShift) {
+		timefreeze = !timefreeze;
+            }
+
+
+
                 
             
         }
